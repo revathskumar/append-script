@@ -1,0 +1,22 @@
+{
+  "name": "append-script",
+  "version": "0.0.0",
+  "description": "Append scripts to your html file.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/revathskumar/append-script.git"
+  },
+  "keywords": [
+    "scripts",
+    "html"
+  ],
+  "author": "Revath S Kumar",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/revathskumar/append-script/issues"
+  }
+}
