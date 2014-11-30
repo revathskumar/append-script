@@ -1,33 +1,27 @@
 'use strict';
 var path = require('path');
 var fs = require('fs');
+var stream = require('stream')
+var util = require('util');
 
-
-module.exports = {
-    rewrite: rewrite,
-    rewriteFile: rewriteFile
+function Rewriter (options) {
+    stream.Transform.call(this);
+    this.options = options;
 };
 
-function rewriteFile(args) {
-    args.path = args.path || process.cwd();
-    var fullPath = path.join(args.path, args.file);
+util.inherits(Rewriter, stream.Transform);
 
-    args.haystack = fs.readFileSync(fullPath, 'utf8');
-    var body = rewrite(args);
+Rewriter.prototype._transform = function (chunk, encoding, callback) {
+    this.options.haystack = chunk.toString();
+    var body = this.rewrite(this.options);
+    callback(null, body)
+};
 
-    fs.writeFileSync(fullPath, body);
-}
-
-function escapeRegExp(str) {
-    return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
-}
-
-function rewrite(args) {
+Rewriter.prototype.rewrite = function rewrite(args) {
     // check if splicable is already in the body text
     var re = new RegExp(args.splicable.map(function(line) {
-        return '\s*' + escapeRegExp(line);
-    })
-        .join('\n'));
+        return '\s*' + this.escapeRegExp(line);
+    }.bind(this)).join('\n'));
 
     if (re.test(args.haystack)) {
         return args.haystack;
@@ -54,8 +48,17 @@ function rewrite(args) {
 
     lines.splice(otherwiseLineIndex, 0, args.splicable.map(function(line) {
         return spaceStr + line;
-    })
-        .join('\n'));
+    }).join('\n'));
 
     return lines.join('\n');
-}
+};
+
+Rewriter.prototype.escapeRegExp = function escapeRegExp(str) {
+    return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
+};
+
+module.exports = function (options) {
+    var rew = new Rewriter(options);
+    return rew;
+};
+
