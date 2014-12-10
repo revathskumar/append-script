@@ -12,22 +12,21 @@ function Rewriter (options) {
 util.inherits(Rewriter, stream.Transform);
 
 Rewriter.prototype._transform = function (chunk, encoding, callback) {
-    this.options.haystack = chunk.toString();
-    var body = this.rewrite(this.options);
+    var body = this.rewrite(this.options, chunk.toString());
     callback(null, body)
 };
 
-Rewriter.prototype.rewrite = function rewrite(args) {
+Rewriter.prototype.rewrite = function rewrite(args, haystack) {
     // check if splicable is already in the body text
     var re = new RegExp(args.splicable.map(function(line) {
         return '\s*' + this.escapeRegExp(line);
     }.bind(this)).join('\n'));
 
-    if (re.test(args.haystack)) {
-        return args.haystack;
+    if (re.test(haystack)) {
+        return haystack;
     }
 
-    var lines = args.haystack.split('\n');
+    var lines = haystack.split('\n');
 
     var otherwiseLineIndex = 0;
     lines.forEach(function(line, i) {
